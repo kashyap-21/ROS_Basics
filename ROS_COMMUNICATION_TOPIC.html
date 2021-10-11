@@ -1,0 +1,210 @@
+<!doctype html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<style type="text/css">
+td, th { border: 1px solid #c3c3c3; padding: 0 3px 0 3px; }
+table { border-collapse: collapse; }
+img { max-width: 100%; }
+</style>
+<meta name="generator" content="ReText 7.2.1">
+<title>ROS_COMMUNICATION_TOPIC</title>
+<style type="text/css">
+</style>
+</head>
+<body>
+<h1><strong>ROS TOPICS</strong></h1>
+<ul>
+<li>ROS topics allows <strong>unidirectional</strong> communication between ROS nodes.</li>
+<li>When using ROS Topics ROS Node can be a <strong>publisher, subscriber or both</strong>.</li>
+<li>Publisher and Subscriber Nodes will exchange ROS Messages over a ROS Topic.</li>
+<li>ROS message is aq simple data structure(ex: integer, floating point, boolean, string, etc.). So a ROS message can hold data of various data-types.</li>
+<li>Let's take a terminology<ul>
+<li>You are ordering a <strong>newspaper</strong> named as <strong>bhaskar</strong>, Which is <strong>published</strong> by <strong>bhaskar times</strong>.</li>
+<li>every morning <strong>ramu kaka</strong> will <strong>deliver</strong> <strong>bhaskar</strong> to you.</li>
+<li>You like <strong>bhaskar</strong> because it is having <strong>madhurima</strong>, <strong>chitralok</strong> section.</li>
+</ul>
+</li>
+<li>In this analogy we can relate.<ul>
+<li>
+<blockquote>
+<p>bhaskar times &lt;---&gt; Publisher Node</p>
+</blockquote>
+</li>
+<li>
+<blockquote>
+<p>You &lt;---&gt; Subcriber Node</p>
+</blockquote>
+</li>
+<li>
+<blockquote>
+<p>ramu kaka &lt;---&gt; Topic</p>
+</blockquote>
+</li>
+<li>
+<blockquote>
+<p>bhaskar &lt;--&gt; ROS message</p>
+</blockquote>
+</li>
+<li>
+<blockquote>
+<p>madhurima and chitralok &lt;---&gt; data fields defined in ROS messages</p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+<p><img alt="ROS Topic" src="/home/kash/Pictures/topic.png" title="ROS Topic"></p>
+<ul>
+<li>Basically ROS Publisher will <code>brodcast</code> the message and any Node can subsctibe it and take the information.</li>
+<li>TOpics are named <code>buses</code> over which <code>nodes</code> exchange <code>messages</code>. </li>
+<li>Topics have anonymous publish/subscribe sementics which decouples the production of information from it's consumption.<ul>
+<li>Inshort <code>nodes</code> are not aware of that who they are communicating. Insted of that they are intrested in a perticular data.</li>
+</ul>
+</li>
+</ul>
+<h3><strong>Topic Types</strong>*</h3>
+<ul>
+<li>Eac topic is strongly typed by the <code>ROS Messages</code> type used to publish to it and nodes can only receive messages with a matching type(or else you will get an error).<ul>
+<li>subscriber should clearly specify the message type before receiving a perticular message.</li>
+<li>All ROS clients check to makesure that an MD5 computed from the <code>msg files</code>  match. This check ensures that the ROS Nodes were compiled from consistent code bases.</li>
+</ul>
+</li>
+</ul>
+<h3><strong>Topic Transport</strong></h3>
+<blockquote>
+<ul>
+<li>ROS currently supports <code>TCP/IP based and UDP- based</code>message transport.</li>
+<li>TCP based transport is known as <code>TCPROS</code> and streams message data over persistent TCP/IP connections.</li>
+<li>TCPROS is the default transport used in ROS and is the only transport that client libraries are required to support. </li>
+<li>The UDP-based transport, which is known as UDPROS and is currently only supported in roscpp, separates messages into UDP packets. UDPROS is a low-latency, lossy transport, so is best suited for tasks like teleoperation.</li>
+<li>ROS nodes negotiate the desired transport at runtime. For example, if a node prefers UDPROS transport but the other Node does not support it, it can fallback on TCPROS transport. This negotiation model enables new transports to be added over time as compelling use cases arise.</li>
+</ul>
+</blockquote>
+<ul>
+<li>There is one command for viewing the topics and it's related information.</li>
+</ul>
+<pre><code>rostopic -h
+</code></pre>
+<p><img alt="rostopic -h" src="/home/kash/Pictures/rostopic.png" title="rostopic -h"></p>
+<pre><code>rostopic type [topic]
+</code></pre>
+<ul>
+<li>Communication on topics happens by sending ROS messages between nodes. To communicate, the publisher and subscriber must send and receive the same <code>type</code> of message. This means that a topic <code>type</code> is defined by the message <code>type</code> published on it. The <code>type</code> of the message sent on a topic can be determined using rostopic <code>type</code>.</li>
+</ul>
+<blockquote>
+<p>For understanding this in better form do the following:</p>
+</blockquote>
+<ul>
+<li>Run ros master in one terminal</li>
+</ul>
+<pre><code>roscore
+</code></pre>
+<ul>
+<li>run below command in other terminal window.</li>
+</ul>
+<pre><code>rosrun turtlesim turtlesim_node
+</code></pre>
+<ul>
+<li>Now run:</li>
+</ul>
+<pre><code>rostopic list
+</code></pre>
+<blockquote>
+<p>Output</p>
+</blockquote>
+<p><img alt="rostopic list" src="/home/kash/Pictures/t_topic.png" title="rostopic list"></p>
+<ul>
+<li>Now run:</li>
+</ul>
+<pre><code>rostopic type /turtle1/cmd_vel
+</code></pre>
+<blockquote>
+<p>Output</p>
+</blockquote>
+<ul>
+<li>It will be the message type.</li>
+</ul>
+<pre><code>
+╭─ kash@pop-os  ~                        ✔  6828  00:52:09
+╰─ rostopic type /turtle1/cmd_vel 
+geometry_msgs/Twist
+</code></pre>
+<ul>
+<li>
+<p>As we observed the type of message associated with <code>/turtle1/cmd_vel</code> topic is <code>geometry_msgs/Twist</code>. let's look more details about this message.</p>
+</li>
+<li>
+<p>Run:</p>
+</li>
+</ul>
+<pre><code>rosmsg show geometry_msgs/Twist
+</code></pre>
+<blockquote>
+<p>Output</p>
+</blockquote>
+<pre><code>╭─ kash@pop-os  ~                        ✔  6838  01:01:51
+╰─ rosmsg show geometry_msgs/Twist
+
+geometry_msgs/Vector3 linear
+  float64 x
+  float64 y
+  float64 z
+geometry_msgs/Vector3 angular
+  float64 x
+  float64 y
+  float64 z
+
+</code></pre>
+<ul>
+<li>Messges consist of <code>fields</code> and <code>constants</code>.</li>
+<li><code>fields</code> are dataypes and <code>constants</code> are representative values.</li>
+<li>
+<p>From the above output, you can observe that these field and constants are displayed twice. However, both of these sections, are separate since they have a different header or different sub-information from the same robot. The 2 headers seen are...</p>
+<ul>
+<li>
+<p><code>geometry_msgs/Vector3 linear</code>: Describes the linear velocities of all the 3 axes.</p>
+</li>
+<li>
+<p><code>geometry_msgs/Vector3 angular</code>: While this header describes, angular velocities of all 3 axes.</p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>rostopic info /turtle1/cmd_vel
+</code></pre>
+<blockquote>
+<p>Output</p>
+</blockquote>
+<pre><code>─ kash@pop-os  ~                      1 ↵  6841  01:03:1
+╰─ rostopic info /turtle1/cmd_vel 
+Type: geometry_msgs/Twist
+
+Publishers: None
+
+Subscribers: 
+ * /turtlesim (http://pop-os:34703/)
+
+</code></pre>
+<ul>
+<li>The output of this command will display both:<ul>
+<li>message type</li>
+<li>Publishing and subcribing Node.</li>
+</ul>
+</li>
+</ul>
+<pre><code>rostopic pub...
+</code></pre>
+<ul>
+<li>you can figure out by your own</li>
+<li>it's for publishing the value from terminal.</li>
+<li>you can use <code>-h</code> for seeking help from terminal.</li>
+</ul>
+<pre><code>rostopic echo [TopicName]
+</code></pre>
+<ul>
+<li>It's for printing published message into the terminal itself</li>
+</ul>
+
+</body>
+</html>
