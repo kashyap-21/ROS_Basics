@@ -316,6 +316,68 @@ if __name__ == '__main__':
     except rospy.ROSInterruptException:
         pass
 ```
+> ```from ros_basics.msg import myMessage``` 
+> + This line we are writing for importing custom message type.
+> + You are knowing that this Messae type exist with ros_basics package but for others, they can run the following command and see wather this message types are exist or not.
+```
+╭─ kash@pop-os  ~              ✔  6900  15:51:32
+╰─ rosmsg list | grep ros_basics
+pkg_ros_basics/myMessage
+ros_basics/myMessage
+╭─ kash@pop-os  ~              ✔  6901  15:51:35
+╰─ 
+```
+> + You can observe message structure also:
+```
+─ kash@pop-os  ~                     ✔  6904  15:54:37
+╰─ rosmsg show ros_basics/myMessage
+int32 id
+string name
+float32 temperature
+float32 humidity
+
+╭─ kash@pop-os  ~                     ✔  6905  15:54:40
+```
+> + At this stage you are knowing ```rospy.init_node()``` function
+
+#### **rospy.Subscriber(......)**
+
++ It's the function for subscribing a perticular topic.
++ It's Parameters are as follows:
+  + **name**
+    + it's in ```string``` datatype which will specify the name of topic to be subscribed
+  + **data_class(Message class)**
+    + Name of ```message``` needs to be provided here.
+    + If you are using any custom message type then you need to specify the name of ```message file``` without it's ```.msg``` extenction.
+      + for ex: ```myMessage```
+    + If you are using any default message type then you need to specify it's name only.
+      + For ex: ```Float32```, ```String```, etc
+  + **callback((fn(msg, cb_args))**
+    + function will be called when the data will be published.
+    + you need to write the function by considering the information to be received.
+    + if you have set your program to run of frequency 0.1Hz and message is being published on topic on each second then callback function will be invoked on each second. you can think of a kind of ```threding``` work. it will not wait for 10 second(according to frequecy) but it will instently receive the message.
+  + **callback_args(Not necssary)**
+    + It's additional arguments to pass to the callback. This is useful when you wish to reuse the same callback for multiple subscriptions.
+  + **queue_size(int)**
+    + Maximum number number of messages to receive at a time.
+    +  This will generally be 1 or None (infinite, default). buff_size should be increased if this parameter is set as incoming data still needs to sit in the incoming buffer before being discarded. Setting queue_size buff_size to a non-default value affects all subscribers to this topic in this process.
+  + **buff_size(int)(Not necessary)**
+    + Incomig message buffer size in bytes. If queue_size is set, this should be set to a non-default value affects all subscribers to this topic in this process.
+  + **tcp_nodelay(bool)(Not necessary)**
+    +  if True, request TCP_NODELAY from publisher. Use of this option is not generally recommended in most cases as it is better to rely on timestamps in message data. Setting tcp_nodelay to True enables TCP_NODELAY for all subscribers in the same python process.
+
+### **callback function**
+```
+def func_callback_topic_my_topic(myMsg):
+
+    rospy.loginfo("Data Received: (%d, %s, %.2f, %.2f)", myMsg.id,
+                  myMsg.name, myMsg.temperature, myMsg.humidity)
+```
++ Here in the argument as a parameter you can specify any name which name you want but keep it in a meaningful way.
+
+
+
+
 
 ### **Talker Node**
 
@@ -366,3 +428,115 @@ if __name__ == '__main__':
     except rospy.ROSInterruptException:
         pass
 ```
+#### **rospy.Publisher(...)**
+
+>rospy.Publisher(topic_name, msg_class, queue_size)
+
++ It's the function for publishing the message on a perticular topic from a node.
++ It's parameters are as follows:
+  + **name**
+    + name of the topic to be specified here.
+    + for ex: ```"myMsg"```.
+  + **data_class**
+    + message class for serialization
+  + **tcpnodelay(bool)(Not necessary)**
+    + If True, sets TCP_NODELAY on publisher's socket (disables Nagle algorithm). This results in lower latency publishing at the cost of efficiency.
+  + **latch(bool)(Not necessary)**
+    + If True, the last message published is 'latched', meaning that any future subscribers will be sent that message immediately upon connection.
+  + **keaders(dict)(Not necessary)**
+    + If not None, a dictionary with additional header key-values being used for future connections.
+  + **queue_size(int)**
+    + The queue size used for asynchronously publishing messages from different threads. A size of zero means an infinite queue, which can be dangerous. When the keyword is not being used or when None is passed all publishing will happen synchronously and a warning message will be printed.
+  + **subscriber_listener=rospy.SubscribeListener(Not necessary)**
+    + Receive callbacks via a rospy.SubscribeListener instance when new subscribers connect and disconnect.
+
+
+> This ```rospy.publisher``` will return the object of ```<class 'rospy.topics.Publisher'>``` which will be catch and latter on it will be used for publishe the message of a perticular format.
+
+> ```myMessage()``` will return the object of ```<class 'pkg_ros_basics.msg._myMessage.myMessage'>```. This object is used for setting up the messages and then another object which is origined from publisher will publish it with this object as an argument. returened object will be stored in ```obj_msg``` here.
+>>It's basically message object of custom message type.
+
++ ```var_loop_rate = rospy.Rate(1) # 1 Hz : Loop will its best to run 1 time in 1 second``` will only being written after initialization of the ```node``` orelse you will get error like: ``` raise rospy.exceptions.ROSInitException("time is not initialized. Have you called init_node()?")
+rospy.exceptions.ROSInitException: time is not initialized. Have you called init_node()?```
+---
+---
+## **UNDERSTAND9ING HOW TO USE MESSAGE TYPE IN PREBUILD MESSAGE TYPES**
+
++ Firstly search the topic on which you need to subscribe or publish the messages.
+
+>Here we are selecting ```/turtle1/cmd_vel```
+>> you can see the active topics from ```rostopic list``` command.
+
+>THen write this command 
+```
+rostopic info /turtle1/cmd_vel
+```
+>Output
+```
+Type: geometry_msgs/Twist
+
+Publishers: None
+
+Subscribers: 
+ * /turtlesim (http://pop-os:44161/)
+```
++ See the Type very carefully
+  + it's constaning ```geometry_msgs``` which is the name of the package
+  + ```Twist``` will be the name of the message file.
+
+>Now write this command:
+```
+rosmsg show geometry_msgs/Twist
+```
+>Output
+```
+geometry_msgs/Vector3 linear
+  float64 x
+  float64 y
+  float64 z
+geometry_msgs/Vector3 angular
+  float64 x
+  float64 y
+  float64 z
+```
++ This will give yo entire message structure
+
+> For importing this message type in ``` your script``` you can write:
+```
+from geometry_msgs.msg import Twist
+```
++ If you want to publish the message on this topic then you need to write publisher function like this:
+
+```
+pub=rospy.Publisher('/turtle1/cmd_vel',Twist,queue_size=10)
+```
++ For getting the message type of ```Twist```:
+```
+msg=Twist()
+```
++ you can set the message parameters by siignment operators or logic expression:
+```
+msg.linear.x=2
+msg.linear.y=2
+msg.linear.z=10
+msg.angular.z=5
+msg.angular.y=2
+msg.angular.x=2
+```
++ For publishing on the same topic:
+```
+pub.publish(msg)
+```
++ If you want to Subscribe the perticular topic and want to get the message then callback you can obviously write and receive the message.
+
++ For writing the subscriber 
+```
+rospy.Subscriber('/turtle1/cmd_vel',Twist,Callback_function)
+```
+
++ Call back function:
+```
+def Callback_function(my):
+
+    rospy.loginfo("Data Received: (%d, %s, %.2f, %.2f)", my.id,
+                  my.name, my.temperature, my.humidity)
